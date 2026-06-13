@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ありがとうボード 🌸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== リセット & ベース ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cork:        #C8956C;
+  --cork-dark:   #8B6348;
+  --cork-shadow: #6B4C33;
+  --cream:       #FFF9E6;
+  --ink:         #3A2C1E;
+  --accent:      #E8715A;
+  --accent-dark: #C4533D;
+  --pin-red:     #D42B2B;
+  --font-disp:   'Kaisei Decol', serif;
+  --font-body:   'Noto Sans JP', sans-serif;
+  --radius:      4px;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cork-dark);
+  min-height: 100vh;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ===== ヘッダー ===== */
+.site-header {
+  background: var(--cork-shadow);
+  padding: 20px 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-title {
+  font-family: var(--font-disp);
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  color: var(--cream);
+  letter-spacing: 0.04em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  line-height: 1.2;
+}
+
+.site-title span { color: #F9CF74; }
+
+.btn-open-modal {
+  flex-shrink: 0;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 28px;
+  padding: 12px 22px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  min-width: 48px;
+  box-shadow: 0 4px 12px rgba(232,113,90,0.5);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.btn-open-modal:hover  { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(232,113,90,0.6); }
+.btn-open-modal:active { transform: translateY(0); }
+
+/* ===== ボード ===== */
+.board-wrap {
+  padding: 24px 20px 60px;
+}
+
+/* コルクボード テクスチャ背景 */
+.board {
+  min-height: calc(100vh - 130px);
+  background-color: var(--cork);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
+      transparent 1px, transparent 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px,
+      transparent 1px, transparent 8px
+    );
+  border-radius: 12px;
+  border: 8px solid #6B4C33;
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.25),
+    0 8px 32px rgba(0,0,0,0.4);
+  padding: 28px 20px 36px;
+  position: relative;
+}
+
+/* 空の状態 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  color: rgba(255,249,230,0.65);
+  text-align: center;
+  pointer-events: none;
+}
+.empty-state .emoji { font-size: 3.5rem; }
+.empty-state p { font-size: 1rem; line-height: 1.7; font-family: var(--font-disp); }
+
+/* カードグリッド */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 32px 24px;
+  align-items: start;
+}
+
+/* ===== 付箋カード ===== */
+.card {
+  position: relative;
+  border-radius: var(--radius);
+  padding: 20px 18px 18px;
+  box-shadow:
+    3px 4px 10px rgba(0,0,0,0.30),
+    1px 1px 3px rgba(0,0,0,0.15);
+  cursor: grab;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+  /* ランダム傾きはJS側で付与 */
+  user-select: none;
+  /* ピン留めアニメーション */
+  animation: pinDrop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes pinDrop {
+  0%   { opacity: 0; transform: translateY(-30px) rotate(var(--rot, 0deg)) scale(0.8); }
+  100% { opacity: 1; transform: translateY(0)     rotate(var(--rot, 0deg)) scale(1);   }
+}
+
+.card:hover {
+  transform: rotate(0deg) scale(1.04) translateY(-4px) !important;
+  box-shadow: 6px 10px 24px rgba(0,0,0,0.4), 2px 2px 6px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+.card:active { cursor: grabbing; }
+
+/* SVGピン */
+.card-pin {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 32px;
+  filter: drop-shadow(1px 3px 3px rgba(0,0,0,0.5));
+  pointer-events: none;
+  z-index: 2;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 6px;
+}
+
+.card-from-to {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(58,44,30,0.65);
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  flex: 1;
+}
+.card-from-to strong { color: var(--ink); font-size: 0.8rem; }
+
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: rgba(58,44,30,0.35);
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-delete:hover { color: #c0392b; background: rgba(192,57,43,0.1); }
+
+.card-message {
+  font-family: var(--font-disp);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ink);
+  word-break: break-word;
+  min-height: 48px;
+}
+
+.card-date {
+  margin-top: 12px;
+  font-size: 0.65rem;
+  color: rgba(58,44,30,0.45);
+  text-align: right;
+}
+
+/* カード色バリアント */
+.card[data-color="yellow"]  { background: #FFF5B1; }
+.card[data-color="pink"]    { background: #FFD6E0; }
+.card[data-color="blue"]    { background: #C8E6FF; }
+.card[data-color="green"]   { background: #C8F5D0; }
+.card[data-color="lavender"]{ background: #E8D5FF; }
+.card[data-color="peach"]   { background: #FFE0C8; }
+
+/* ===== モーダル ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40,25,15,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--cream);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 540px;
+  padding: 28px 24px 36px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(.32,.72,0,1);
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.modal-overlay.open .modal {
+  transform: translateY(0);
+}
+
+.modal-title {
+  font-family: var(--font-disp);
+  font-size: 1.3rem;
+  color: var(--ink);
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(58,44,30,0.7);
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  border: 2px solid rgba(58,44,30,0.15);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--ink);
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 48px;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232,113,90,0.18);
+}
+.form-group textarea { resize: vertical; min-height: 100px; }
+
+/* 色選択 */
+.color-picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.color-opt {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  position: relative;
+  flex-shrink: 0;
+  min-width: 36px;
+  min-height: 36px;
+}
+.color-opt:hover { transform: scale(1.15); }
+.color-opt.selected {
+  border-color: var(--ink);
+  transform: scale(1.2);
+}
+.color-opt.selected::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: rgba(0,0,0,0.5);
+}
+.color-opt[data-c="yellow"]  { background: #FFF5B1; }
+.color-opt[data-c="pink"]    { background: #FFD6E0; }
+.color-opt[data-c="blue"]    { background: #C8E6FF; }
+.color-opt[data-c="green"]   { background: #C8F5D0; }
+.color-opt[data-c="lavender"]{ background: #E8D5FF; }
+.color-opt[data-c="peach"]   { background: #FFE0C8; }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.btn-submit {
+  flex: 1;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 52px;
+  transition: background 0.15s, transform 0.15s;
+}
+.btn-submit:hover  { background: var(--accent-dark); transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+
+.btn-cancel {
+  background: rgba(58,44,30,0.1);
+  color: var(--ink);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  cursor: pointer;
+  min-height: 52px;
+  transition: background 0.15s;
+}
+.btn-cancel:hover { background: rgba(58,44,30,0.18); }
+
+/* ===== 件数バッジ ===== */
+.count-badge {
+  font-size: 0.8rem;
+  color: rgba(255,249,230,0.7);
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ===== ドラッグ中スタイル ===== */
+.card.dragging {
+  opacity: 0.5;
+  transform: rotate(3deg) scale(1.05) !important;
+  z-index: 50;
+}
+.card.drag-over {
+  outline: 3px dashed rgba(58,44,30,0.4);
+  outline-offset: 4px;
+}
+
+/* ===== PC レイアウト ===== */
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center;
+  }
+  .modal {
+    border-radius: 20px;
+    max-width: 480px;
+    max-height: 88vh;
+    transform: translateY(20px) scale(0.96);
+  }
+  .modal-overlay.open .modal {
+    transform: translateY(0) scale(1);
+  }
+  .board-wrap { padding: 32px 32px 80px; }
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 40px 30px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+/* ===== スマホ最適化 ===== */
+@media (max-width: 480px) {
+  .site-header { padding: 14px 16px 12px; }
+  .btn-open-modal { padding: 12px 16px; font-size: 0.85rem; }
+  .board-wrap { padding: 16px 12px 60px; }
+  .board { padding: 20px 14px 28px; border-width: 5px; border-radius: 8px; }
+  .cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 16px;
+  }
+  .card { padding: 16px 14px 14px; }
+  .card-message { font-size: 0.9rem; }
+}
+
+@media (max-width: 360px) {
+  .cards-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== モーション軽減 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+  .card, .modal, .modal-overlay, .btn-open-modal { transition: none; }
+}
+
+/* ===== トースト通知 ===== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink);
+  color: var(--cream);
+  padding: 12px 22px;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  z-index: 999;
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+  opacity: 0;
+  white-space: nowrap;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ヘッダー -->
+<header class="site-header">
+  <h1 class="site-title">🌸 <span>ありがとう</span>ボード</h1>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <span class="count-badge" id="countBadge">0 枚</span>
+    <button class="btn-open-modal" id="btnOpenModal" aria-label="カードを追加">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      感謝を伝える
+    </button>
+  </div>
+</header>
+
+<!-- ボード -->
+<div class="board-wrap">
+  <div class="board" id="board">
+    <div class="empty-state" id="emptyState">
+      <span class="emoji">💌</span>
+      <p>まだカードがありません。<br>「感謝を伝える」ボタンから<br>最初のひとことを届けましょう！</p>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+</div>
+
+<!-- 追加モーダル -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modal">
+    <h2 class="modal-title" id="modalTitle">💌 感謝のカードを書く</h2>
+
+    <div class="form-group">
+      <label for="inputFrom">送る人（あなたの名前）</label>
+      <input type="text" id="inputFrom" placeholder="例: 田中さんへ の たろう" maxlength="30" autocomplete="nickname">
+    </div>
+
+    <div class="form-group">
+      <label for="inputTo">受け取る人</label>
+      <input type="text" id="inputTo" placeholder="例: 山田さん" maxlength="30">
+    </div>
+
+    <div class="form-group">
+      <label for="inputMessage">メッセージ ✏️</label>
+      <textarea id="inputMessage" placeholder="いつもありがとう！先日の件、本当に助かりました😊" maxlength="200"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>カードの色</label>
+      <div class="color-picker" id="colorPicker" role="radiogroup" aria-label="カードの色">
+        <button class="color-opt selected" data-c="yellow"   title="イエロー"   role="radio" aria-checked="true"></button>
+        <button class="color-opt"          data-c="pink"     title="ピンク"     role="radio" aria-checked="false"></button>
+        <button class="color-opt"          data-c="blue"     title="ブルー"     role="radio" aria-checked="false"></button>
+        <button class="color-opt"          data-c="green"    title="グリーン"   role="radio" aria-checked="false"></button>
+        <button class="color-opt"          data-c="lavender" title="ラベンダー" role="radio" aria-checked="false"></button>
+        <button class="color-opt"          data-c="peach"    title="ピーチ"     role="radio" aria-checked="false"></button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnCancel">キャンセル</button>
+      <button class="btn-submit" id="btnSubmit">📌 ボードに貼る</button>
+    </div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== ストレージキー ===== */
+const STORAGE_KEY = 'arigato_board_v1';
+
+/* ===== 状態 ===== */
+let cards = [];
+let selectedColor = 'yellow';
+let dragSrcIndex = null;
+
+/* ===== LocalStorage ===== */
+function loadCards() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    cards = raw ? JSON.parse(raw) : [];
+  } catch { cards = []; }
+}
+function saveCards() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cards)); } catch {}
+}
+
+/* ===== DOM ヘルパー ===== */
+const $ = id => document.getElementById(id);
+const board       = $('board');
+const cardsGrid   = $('cardsGrid');
+const emptyState  = $('emptyState');
+const countBadge  = $('countBadge');
+const modalOverlay = $('modalOverlay');
+const inputFrom   = $('inputFrom');
+const inputTo     = $('inputTo');
+const inputMsg    = $('inputMessage');
+
+/* ===== モーダル制御 ===== */
+function openModal() {
+  modalOverlay.classList.add('open');
+  modalOverlay.removeAttribute('aria-hidden');
+  inputFrom.focus();
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  modalOverlay.classList.remove('open');
+  modalOverlay.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  resetForm();
+}
+
+$('btnOpenModal').addEventListener('click', openModal);
+$('btnCancel').addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function resetForm() {
+  inputFrom.value = '';
+  inputTo.value   = '';
+  inputMsg.value  = '';
+  setColor('yellow');
+}
+
+/* ===== 色選択 ===== */
+document.querySelectorAll('.color-opt').forEach(btn => {
+  btn.addEventListener('click', () => setColor(btn.dataset.c));
+});
+function setColor(c) {
+  selectedColor = c;
+  document.querySelectorAll('.color-opt').forEach(btn => {
+    const active = btn.dataset.c === c;
+    btn.classList.toggle('selected', active);
+    btn.setAttribute('aria-checked', active);
+  });
+}
+
+/* ===== カード追加 ===== */
+$('btnSubmit').addEventListener('click', addCard);
+inputMsg.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') addCard();
+});
+
+function addCard() {
+  const from    = inputFrom.value.trim();
+  const to      = inputTo.value.trim();
+  const message = inputMsg.value.trim();
+
+  if (!message) {
+    showToast('💬 メッセージを入力してください');
+    inputMsg.focus();
+    return;
+  }
+
+  const card = {
+    id:      crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2),
+    from,
+    to,
+    message,
+    color:   selectedColor,
+    rot:     (Math.random() * 6 - 3).toFixed(2), // -3〜+3度
+    date:    new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' })
+  };
+
+  cards.unshift(card);
+  saveCards();
+  renderCards();
+  closeModal();
+  showToast('📌 ボードに貼りました！');
+}
+
+/* ===== 削除 ===== */
+function deleteCard(id) {
+  if (!confirm('このカードを削除しますか？')) return;
+  cards = cards.filter(c => c.id !== id);
+  saveCards();
+  renderCards();
+  showToast('🗑 カードを削除しました');
+}
+
+/* ===== SVGピン ===== */
+function pinSVG() {
+  return `<svg class="card-pin" viewBox="0 0 22 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="11" cy="10" rx="9" ry="9" fill="#D42B2B"/>
+    <ellipse cx="8.5" cy="7.5" rx="2.5" ry="2.5" fill="rgba(255,255,255,0.4)"/>
+    <rect x="10" y="17" width="2" height="13" rx="1" fill="#888"/>
+    <ellipse cx="11" cy="10" rx="9" ry="9" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>
+  </svg>`;
+}
+
+/* ===== レンダリング ===== */
+function renderCards() {
+  cardsGrid.innerHTML = '';
+  countBadge.textContent = `${cards.length} 枚`;
+  emptyState.style.display = cards.length === 0 ? 'flex' : 'none';
+
+  cards.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.color  = card.color;
+    el.dataset.id     = card.id;
+    el.dataset.index  = idx;
+    el.style.setProperty('--rot', card.rot + 'deg');
+    el.style.transform = `rotate(${card.rot}deg)`;
+    el.draggable = true;
+
+    const fromTo = [
+      card.to   ? `<strong>${escHtml(card.to)}</strong> へ` : '',
+      card.from  ? `${escHtml(card.from)} より` : ''
+    ].filter(Boolean).join('<br>');
+
+    el.innerHTML = `
+      ${pinSVG()}
+      <div class="card-header">
+        <div class="card-from-to">${fromTo || '<span style="opacity:.45">匿名より</span>'}</div>
+        <button class="btn-delete" title="削除" aria-label="カードを削除">✕</button>
+      </div>
+      <div class="card-message">${escHtml(card.message).replace(/\n/g, '<br>')}</div>
+      <div class="card-date">${escHtml(card.date)}</div>
+    `;
+
+    /* 削除ボタン */
+    el.querySelector('.btn-delete').addEventListener('click', e => {
+      e.stopPropagation();
+      deleteCard(card.id);
+    });
+
+    /* ドラッグ＆ドロップ */
+    el.addEventListener('dragstart', e => {
+      dragSrcIndex = idx;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => el.classList.add('dragging'), 0);
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('drag-over'));
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (idx !== dragSrcIndex) el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      if (dragSrcIndex === null || dragSrcIndex === idx) return;
+      const moved = cards.splice(dragSrcIndex, 1)[0];
+      cards.splice(idx, 0, moved);
+      dragSrcIndex = null;
+      saveCards();
+      renderCards();
+    });
+
+    cardsGrid.appendChild(el);
+  });
+}
+
+/* ===== エスケープ ===== */
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+/* ===== トースト ===== */
+let toastTimer;
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ===== 初期化 ===== */
+loadCards();
+renderCards();
+modalOverlay.setAttribute('aria-hidden', 'true');
+</script>
+</body>
+</html>

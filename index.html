@@ -247,6 +247,9 @@ body {
 }
 .btn-delete:hover { color: #c0392b; background: rgba(192,57,43,0.1); }
 
+.card-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.btn-edit:hover { color: var(--accent-dark); background: rgba(232,113,90,0.12); }
+
 .card-photo {
   width: 100%;
   border-radius: 6px;
@@ -704,6 +707,7 @@ body {
       <label for="inputPhoto">写真（任意）</label>
       <input type="file" id="inputPhoto" accept="image/*">
       <img class="photo-preview" id="photoPreview" alt="プレビュー">
+      <button type="button" class="btn-link" id="btnRemovePhoto" hidden>この写真を削除する</button>
     </div>
 
     <div class="form-group">
@@ -876,6 +880,9 @@ let cards = [];
 let selectedColor = 'yellow';
 let session = null; // { token, nickname, email }
 let pendingPhoto = null; // { base64, mimeType }
+let editingCardId = null; // 編集中のカードID（nullなら新規投稿）
+let removePhotoFlag = false; // 編集時に既存写真を削除するか
+let existingPhotoUrl = ''; // 編集時の既存写真URL
 
 /* ===== DOM ヘルパー ===== */
 const $ = id => document.getElementById(id);
@@ -915,17 +922,41 @@ function updateAuthUI() {
   if (loggedIn) $('userNick').textContent = session.nickname;
 }
 
-/* ===== 追加モーダル制御 ===== */
+/* ===== 追加/編集モーダル制御 ===== */
 function openModal() {
   if (!session || !session.token) {
     showToast('💬 投稿にはログインが必要です');
     openAuthModal('login');
     return;
   }
+  editingCardId = null;
+  $('modalTitle').textContent = '💌 感謝のカードを書く';
+  $('btnSubmit').textContent = '📌 ボードに貼る';
   $('fromDisplay').textContent = session.nickname;
   $('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+
+function openEditModal(card) {
+  editingCardId = card.id;
+  removePhotoFlag = false;
+  existingPhotoUrl = card.photoUrl || '';
+  $('modalTitle').textContent = '✏️ カードを編集';
+  $('btnSubmit').textContent = '💾 更新する';
+  $('fromDisplay').textContent = card.fromNickname;
+  $('inputTo').value = card.toName || '';
+  $('inputMessage').value = card.message || '';
+  setColor(card.color || 'yellow');
+  if (existingPhotoUrl) {
+    $('photoPreview').src = existingPhotoUrl;
+    $('photoPreview').style.display = 'block';
+    $('btnRemovePhoto').hidden = false;
+  }
+  hideError('cardFormError');
+  $('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
 function closeModal() {
   $('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
@@ -948,7 +979,11 @@ function resetForm() {
   $('inputPhoto').value = '';
   $('photoPreview').style.display = 'none';
   $('photoPreview').src = '';
+  $('btnRemovePhoto').hidden = true;
   pendingPhoto = null;
+  editingCardId = null;
+  removePhotoFlag = false;
+  existingPhotoUrl = '';
   hideError('cardFormError');
   setColor('yellow');
 }
@@ -969,7 +1004,7 @@ function setColor(c) {
 /* ===== 写真選択 ===== */
 $('inputPhoto').addEventListener('change', () => {
   const file = $('inputPhoto').files[0];
-  if (!file) { pendingPhoto = null; $('photoPreview').style.display = 'none'; return; }
+  if (!file) { pendingPhoto = null; return; }
   if (file.size > 5 * 1024 * 1024) {
     showToast('⚠️ 写真は5MB以下にしてください');
     $('inputPhoto').value = '';
@@ -979,10 +1014,21 @@ $('inputPhoto').addEventListener('change', () => {
   reader.onload = () => {
     const dataUrl = reader.result;
     pendingPhoto = { base64: dataUrl.split(',')[1], mimeType: file.type };
+    removePhotoFlag = false;
     $('photoPreview').src = dataUrl;
     $('photoPreview').style.display = 'block';
+    $('btnRemovePhoto').hidden = false;
   };
   reader.readAsDataURL(file);
+});
+
+$('btnRemovePhoto').addEventListener('click', () => {
+  pendingPhoto = null;
+  removePhotoFlag = true;
+  $('inputPhoto').value = '';
+  $('photoPreview').style.display = 'none';
+  $('photoPreview').src = '';
+  $('btnRemovePhoto').hidden = true;
 });
 
 /* ===== エラー/成功メッセージ ===== */
@@ -991,10 +1037,10 @@ function hideError(id) { const el = $(id); el.textContent = ''; el.classList.rem
 function showSuccessMsg(id, msg) { const el = $(id); el.textContent = msg; el.classList.add('show'); }
 function hideSuccessMsg(id) { const el = $(id); el.textContent = ''; el.classList.remove('show'); }
 
-/* ===== カード追加 ===== */
-$('btnSubmit').addEventListener('click', addCard);
+/* ===== カード追加・編集 ===== */
+$('btnSubmit').addEventListener('click', submitCard);
 
-async function addCard() {
+async function submitCard() {
   const toName = $('inputTo').value.trim();
   const message = $('inputMessage').value.trim();
   hideError('cardFormError');
@@ -1005,27 +1051,34 @@ async function addCard() {
     return;
   }
 
+  const isEdit = !!editingCardId;
+  const submitLabel = isEdit ? '💾 更新する' : '📌 ボードに貼る';
+
   $('btnSubmit').disabled = true;
-  $('btnSubmit').textContent = '送信中…';
+  $('btnSubmit').textContent = isEdit ? '更新中…' : '送信中…';
   try {
     const payload = { token: session.token, toName, message, color: selectedColor };
     if (pendingPhoto) {
       payload.photoBase64 = pendingPhoto.base64;
       payload.photoMimeType = pendingPhoto.mimeType;
     }
-    const res = await api('addCard', payload);
+    if (isEdit) {
+      payload.cardId = editingCardId;
+      if (removePhotoFlag) payload.removePhoto = true;
+    }
+    const res = await api(isEdit ? 'updateCard' : 'addCard', payload);
     if (!res.ok) {
-      showError('cardFormError', res.error || '投稿に失敗しました');
+      showError('cardFormError', res.error || (isEdit ? '更新に失敗しました' : '投稿に失敗しました'));
       return;
     }
     closeModal();
-    showToast('📌 ボードに貼りました！');
+    showToast(isEdit ? '💾 カードを更新しました' : '📌 ボードに貼りました！');
     await refreshCards();
   } catch (err) {
     showError('cardFormError', '通信エラーが発生しました');
   } finally {
     $('btnSubmit').disabled = false;
-    $('btnSubmit').textContent = '📌 ボードに貼る';
+    $('btnSubmit').textContent = submitLabel;
   }
 }
 
@@ -1076,21 +1129,34 @@ function renderCards() {
 
     const isOwner = session && session.token && card.memberId === session.memberId;
     const photoHtml = card.photoUrl ? '<img class="card-photo" src="' + escHtml(card.photoUrl) + '" alt="添付写真" loading="lazy">' : '';
+    const ownerButtons = isOwner
+      ? '<div class="card-actions">' +
+          '<button class="btn-delete btn-edit" title="編集" aria-label="カードを編集">✎</button>' +
+          '<button class="btn-delete" title="削除" aria-label="カードを削除">✕</button>' +
+        '</div>'
+      : '';
 
     el.innerHTML =
       pinSVG() +
       '<div class="card-header">' +
         '<div class="card-from-to">' + (fromTo || '<span style="opacity:.45">匿名より</span>') + '</div>' +
-        (isOwner ? '<button class="btn-delete" title="削除" aria-label="カードを削除">✕</button>' : '') +
+        ownerButtons +
       '</div>' +
       photoHtml +
       '<div class="card-message">' + escHtml(card.message).replace(/\n/g, '<br>') + '</div>' +
       '<div class="card-date">' + escHtml(card.dateDisplay || '') + '</div>';
 
     if (isOwner) {
-      el.querySelector('.btn-delete').addEventListener('click', e => {
+      el.querySelector('.btn-edit').addEventListener('click', e => {
         e.stopPropagation();
-        deleteCard(card.id);
+        openEditModal(card);
+      });
+      el.querySelectorAll('.btn-delete').forEach(btn => {
+        if (btn.classList.contains('btn-edit')) return;
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          deleteCard(card.id);
+        });
       });
     }
 

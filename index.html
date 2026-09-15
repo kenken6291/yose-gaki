@@ -1236,7 +1236,7 @@ $('btnLoginSubmit').addEventListener('click', async () => {
       switchAuthTab('mustChange');
       return;
     }
-    session = { token: res.token, nickname: res.nickname, email };
+    session = { token: res.token, memberId: res.memberId, nickname: res.nickname, email };
     saveSession();
     closeAuthModal();
     showToast('👋 ログインしました');
@@ -1303,7 +1303,7 @@ $('btnMustChangeSubmit').addEventListener('click', async () => {
     // 変更後のニックネームはログイン時のものを再取得するためログインし直す
     const loginRes = await api('login', { email, password: newPassword });
     if (loginRes.ok) {
-      session = { token: loginRes.token, nickname: loginRes.nickname, email };
+      session = { token: loginRes.token, memberId: loginRes.memberId, nickname: loginRes.nickname, email };
       saveSession();
     }
     $('mustChangeNewPw').value = '';

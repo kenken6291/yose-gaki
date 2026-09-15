@@ -48,6 +48,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  flex-wrap: wrap;
 }
 
 .site-title {
@@ -60,6 +61,14 @@ body {
 }
 
 .site-title span { color: #F9CF74; }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
 
 .btn-open-modal {
   flex-shrink: 0;
@@ -82,6 +91,36 @@ body {
 }
 .btn-open-modal:hover  { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(232,113,90,0.6); }
 .btn-open-modal:active { transform: translateY(0); }
+
+.btn-auth {
+  background: rgba(255,249,230,0.15);
+  color: var(--cream);
+  border: none;
+  border-radius: 28px;
+  padding: 10px 18px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s;
+}
+.btn-auth:hover { background: rgba(255,249,230,0.28); }
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,249,230,0.15);
+  color: var(--cream);
+  border-radius: 28px;
+  padding: 8px 8px 8px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-height: 44px;
+}
+.user-badge:hover { background: rgba(255,249,230,0.25); }
+.user-badge .nick { font-weight: 700; }
 
 /* ===== ボード ===== */
 .board-wrap {
@@ -143,11 +182,9 @@ body {
   box-shadow:
     3px 4px 10px rgba(0,0,0,0.30),
     1px 1px 3px rgba(0,0,0,0.15);
-  cursor: grab;
+  cursor: default;
   transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
-  /* ランダム傾きはJS側で付与 */
   user-select: none;
-  /* ピン留めアニメーション */
   animation: pinDrop 0.4s cubic-bezier(.34,1.56,.64,1) both;
 }
 
@@ -161,7 +198,6 @@ body {
   box-shadow: 6px 10px 24px rgba(0,0,0,0.4), 2px 2px 6px rgba(0,0,0,0.2);
   z-index: 10;
 }
-.card:active { cursor: grabbing; }
 
 /* SVGピン */
 .card-pin {
@@ -211,6 +247,14 @@ body {
 }
 .btn-delete:hover { color: #c0392b; background: rgba(192,57,43,0.1); }
 
+.card-photo {
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  display: block;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
 .card-message {
   font-family: var(--font-disp);
   font-size: 0.95rem;
@@ -240,7 +284,6 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(40,25,15,0.7);
-  backdrop-filter: blur(4px);
   z-index: 200;
   display: flex;
   align-items: flex-end;
@@ -314,6 +357,41 @@ body {
 }
 .form-group textarea { resize: vertical; min-height: 100px; }
 
+.form-hint {
+  font-size: 0.75rem;
+  color: rgba(58,44,30,0.55);
+  margin-top: 4px;
+}
+
+.pw-field { position: relative; }
+.pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: rgba(58,44,30,0.6);
+  padding: 6px 8px;
+}
+
+.form-static {
+  padding: 12px 14px;
+  background: rgba(58,44,30,0.06);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.photo-preview {
+  margin-top: 10px;
+  max-width: 160px;
+  border-radius: 8px;
+  display: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
 /* 色選択 */
 .color-picker {
   display: flex;
@@ -376,6 +454,7 @@ body {
 }
 .btn-submit:hover  { background: var(--accent-dark); transform: translateY(-1px); }
 .btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.6; cursor: default; transform: none; }
 
 .btn-cancel {
   background: rgba(58,44,30,0.1);
@@ -391,6 +470,92 @@ body {
 }
 .btn-cancel:hover { background: rgba(58,44,30,0.18); }
 
+.btn-danger {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 52px;
+  width: 100%;
+}
+.btn-danger:hover { background: #a5311f; }
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent-dark);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 0;
+  text-decoration: underline;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 22px;
+  border-bottom: 2px solid rgba(58,44,30,0.12);
+}
+.auth-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 4px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(58,44,30,0.5);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+.auth-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+.auth-panel { display: none; }
+.auth-panel.active { display: block; }
+
+.form-error {
+  background: rgba(192,57,43,0.1);
+  color: #a5311f;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+  display: none;
+  line-height: 1.5;
+}
+.form-error.show { display: block; }
+
+.form-success {
+  background: rgba(72,142,90,0.12);
+  color: #2d6a3e;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+  display: none;
+  line-height: 1.5;
+}
+.form-success.show { display: block; }
+
+.mypage-section {
+  border-top: 1px solid rgba(58,44,30,0.12);
+  padding-top: 18px;
+  margin-top: 18px;
+}
+.mypage-section h3 {
+  font-size: 0.85rem;
+  color: rgba(58,44,30,0.6);
+  margin-bottom: 12px;
+  letter-spacing: 0.03em;
+}
+
 /* ===== 件数バッジ ===== */
 .count-badge {
   font-size: 0.8rem;
@@ -399,17 +564,6 @@ body {
   background: rgba(0,0,0,0.2);
   border-radius: 20px;
   white-space: nowrap;
-}
-
-/* ===== ドラッグ中スタイル ===== */
-.card.dragging {
-  opacity: 0.5;
-  transform: rotate(3deg) scale(1.05) !important;
-  z-index: 50;
-}
-.card.drag-over {
-  outline: 3px dashed rgba(58,44,30,0.4);
-  outline-offset: 4px;
 }
 
 /* ===== PC レイアウト ===== */
@@ -480,11 +634,17 @@ body {
   transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
   opacity: 0;
   white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+  white-space: normal;
 }
 .toast.show {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* [hidden]属性の競合対策 */
+[hidden] { display: none !important; }
 </style>
 </head>
 
@@ -493,13 +653,18 @@ body {
 <!-- ヘッダー -->
 <header class="site-header">
   <h1 class="site-title">🌸 <span>ありがとう</span>ボード</h1>
-  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+  <div class="header-right">
     <span class="count-badge" id="countBadge">0 枚</span>
     <button class="btn-open-modal" id="btnOpenModal" aria-label="カードを追加">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
       </svg>
       感謝を伝える
+    </button>
+    <button class="btn-auth" id="btnAuthOpen" hidden>ログイン / 登録</button>
+    <button class="user-badge" id="userBadge" hidden>
+      <span class="nick" id="userNick"></span>
+      <span>▾</span>
     </button>
   </div>
 </header>
@@ -521,8 +686,8 @@ body {
     <h2 class="modal-title" id="modalTitle">💌 感謝のカードを書く</h2>
 
     <div class="form-group">
-      <label for="inputFrom">送る人（あなたの名前）</label>
-      <input type="text" id="inputFrom" placeholder="例: 田中さんへ の たろう" maxlength="30" autocomplete="nickname">
+      <label>送る人（あなた）</label>
+      <div class="form-static" id="fromDisplay"></div>
     </div>
 
     <div class="form-group">
@@ -533,6 +698,12 @@ body {
     <div class="form-group">
       <label for="inputMessage">メッセージ ✏️</label>
       <textarea id="inputMessage" placeholder="いつもありがとう！先日の件、本当に助かりました😊" maxlength="200"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="inputPhoto">写真（任意）</label>
+      <input type="file" id="inputPhoto" accept="image/*">
+      <img class="photo-preview" id="photoPreview" alt="プレビュー">
     </div>
 
     <div class="form-group">
@@ -547,9 +718,145 @@ body {
       </div>
     </div>
 
+    <div class="form-error" id="cardFormError"></div>
+
     <div class="modal-actions">
       <button class="btn-cancel" id="btnCancel">キャンセル</button>
       <button class="btn-submit" id="btnSubmit">📌 ボードに貼る</button>
+    </div>
+  </div>
+</div>
+
+<!-- ログイン/登録モーダル -->
+<div class="modal-overlay" id="authOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="authModal">
+    <h2 class="modal-title">🔑 ログイン / 会員登録</h2>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin">ログイン</button>
+      <button class="auth-tab" id="tabRegister">新規登録</button>
+    </div>
+
+    <!-- ログインパネル -->
+    <div class="auth-panel active" id="panelLogin">
+      <div class="form-error" id="loginError"></div>
+      <div class="form-group">
+        <label for="loginEmail">メールアドレス</label>
+        <input type="email" id="loginEmail" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">パスワード</label>
+        <div class="pw-field">
+          <input type="password" id="loginPassword" autocomplete="current-password">
+          <button type="button" class="pw-toggle" data-target="loginPassword">表示</button>
+        </div>
+      </div>
+      <button class="btn-link" id="btnForgotPassword">パスワードを忘れた方はこちら</button>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btnAuthCancel1">閉じる</button>
+        <button class="btn-submit" id="btnLoginSubmit">ログイン</button>
+      </div>
+    </div>
+
+    <!-- 登録パネル -->
+    <div class="auth-panel" id="panelRegister">
+      <div class="form-error" id="registerError"></div>
+      <div class="form-success" id="registerSuccess"></div>
+      <div class="form-group">
+        <label for="registerNickname">ニックネーム</label>
+        <input type="text" id="registerNickname" maxlength="30" autocomplete="nickname">
+      </div>
+      <div class="form-group">
+        <label for="registerEmail">メールアドレス</label>
+        <input type="email" id="registerEmail" autocomplete="email">
+        <div class="form-hint">登録すると仮パスワードがメールで届きます</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btnAuthCancel2">閉じる</button>
+        <button class="btn-submit" id="btnRegisterSubmit">登録する</button>
+      </div>
+    </div>
+
+    <!-- パスワード忘れパネル -->
+    <div class="auth-panel" id="panelForgot">
+      <div class="form-error" id="forgotError"></div>
+      <div class="form-success" id="forgotSuccess"></div>
+      <div class="form-group">
+        <label for="forgotEmail">登録済みのメールアドレス</label>
+        <input type="email" id="forgotEmail" autocomplete="email">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btnForgotBack">戻る</button>
+        <button class="btn-submit" id="btnForgotSubmit">仮パスワードを送る</button>
+      </div>
+    </div>
+
+    <!-- 初回パスワード変更パネル -->
+    <div class="auth-panel" id="panelMustChange">
+      <div class="form-error" id="mustChangeError"></div>
+      <p style="font-size:0.85rem; color:rgba(58,44,30,0.7); margin-bottom:16px;">初回ログインです。新しいパスワードを設定してください。</p>
+      <div class="form-group">
+        <label for="mustChangeNewPw">新しいパスワード（6文字以上）</label>
+        <div class="pw-field">
+          <input type="password" id="mustChangeNewPw" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="mustChangeNewPw">表示</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-submit" id="btnMustChangeSubmit" style="flex:1;">パスワードを設定する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- マイページモーダル -->
+<div class="modal-overlay" id="mypageOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="mypageModal">
+    <h2 class="modal-title">👤 マイページ</h2>
+
+    <div class="form-group">
+      <label>ログイン中のメールアドレス</label>
+      <div class="form-static" id="mypageEmail"></div>
+    </div>
+
+    <div class="mypage-section">
+      <h3>ニックネーム変更</h3>
+      <div class="form-error" id="nicknameError"></div>
+      <div class="form-success" id="nicknameSuccess"></div>
+      <div class="form-group">
+        <input type="text" id="mypageNickname" maxlength="30">
+      </div>
+      <button class="btn-cancel" id="btnNicknameSubmit" style="width:100%;">ニックネームを変更</button>
+    </div>
+
+    <div class="mypage-section">
+      <h3>パスワード変更</h3>
+      <div class="form-error" id="pwChangeError"></div>
+      <div class="form-success" id="pwChangeSuccess"></div>
+      <div class="form-group">
+        <div class="pw-field">
+          <input type="password" id="mypageNewPw" placeholder="新しいパスワード（6文字以上）" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="mypageNewPw">表示</button>
+        </div>
+      </div>
+      <button class="btn-cancel" id="btnPwChangeSubmit" style="width:100%;">パスワードを変更</button>
+    </div>
+
+    <div class="mypage-section">
+      <button class="btn-cancel" id="btnLogout" style="width:100%;">ログアウト</button>
+    </div>
+
+    <div class="mypage-section">
+      <h3>退会</h3>
+      <div class="form-error" id="deleteAccountError"></div>
+      <div class="form-group">
+        <input type="password" id="deleteAccountPw" placeholder="確認のためパスワードを入力" autocomplete="current-password">
+      </div>
+      <button class="btn-danger" id="btnDeleteAccount">退会する（投稿は削除されません）</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnMypageClose" style="width:100%;">閉じる</button>
     </div>
   </div>
 </div>
@@ -558,59 +865,91 @@ body {
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ===== ストレージキー ===== */
-const STORAGE_KEY = 'arigato_board_v1';
+/* =========================================================
+   設定: デプロイしたGAS Web AppのURLをここに設定してください
+   例: https://script.google.com/macros/s/XXXXXXXX/exec
+========================================================= */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVeOFhvn-lqHo3AgmJhlhPgHHgLl0AEV3JtNFd4El2iXSmTY4y0_sXmftVL_Y5UiVAyw/exec';
 
 /* ===== 状態 ===== */
 let cards = [];
 let selectedColor = 'yellow';
-let dragSrcIndex = null;
-
-/* ===== LocalStorage ===== */
-function loadCards() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    cards = raw ? JSON.parse(raw) : [];
-  } catch { cards = []; }
-}
-function saveCards() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cards)); } catch {}
-}
+let session = null; // { token, nickname, email }
+let pendingPhoto = null; // { base64, mimeType }
 
 /* ===== DOM ヘルパー ===== */
 const $ = id => document.getElementById(id);
-const board       = $('board');
-const cardsGrid   = $('cardsGrid');
-const emptyState  = $('emptyState');
-const countBadge  = $('countBadge');
-const modalOverlay = $('modalOverlay');
-const inputFrom   = $('inputFrom');
-const inputTo     = $('inputTo');
-const inputMsg    = $('inputMessage');
+const board        = $('board');
+const cardsGrid    = $('cardsGrid');
+const emptyState   = $('emptyState');
+const countBadge   = $('countBadge');
 
-/* ===== モーダル制御 ===== */
+/* ===== API 呼び出し =====
+   Content-Type: text/plain で送信し、CORSプリフライトを回避する */
+async function api(action, payload) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ action }, payload))
+  });
+  return res.json();
+}
+
+/* ===== セッション管理 ===== */
+function loadSession() {
+  try {
+    const raw = localStorage.getItem('yosegaki_session');
+    session = raw ? JSON.parse(raw) : null;
+  } catch { session = null; }
+  updateAuthUI();
+}
+function saveSession() {
+  if (session) localStorage.setItem('yosegaki_session', JSON.stringify(session));
+  else localStorage.removeItem('yosegaki_session');
+  updateAuthUI();
+}
+function updateAuthUI() {
+  const loggedIn = !!(session && session.token);
+  $('btnAuthOpen').hidden = loggedIn;
+  $('userBadge').hidden = !loggedIn;
+  if (loggedIn) $('userNick').textContent = session.nickname;
+}
+
+/* ===== 追加モーダル制御 ===== */
 function openModal() {
-  modalOverlay.classList.add('open');
-  modalOverlay.removeAttribute('aria-hidden');
-  inputFrom.focus();
+  if (!session || !session.token) {
+    showToast('💬 投稿にはログインが必要です');
+    openAuthModal('login');
+    return;
+  }
+  $('fromDisplay').textContent = session.nickname;
+  $('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 function closeModal() {
-  modalOverlay.classList.remove('open');
-  modalOverlay.setAttribute('aria-hidden', 'true');
+  $('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
   resetForm();
 }
-
 $('btnOpenModal').addEventListener('click', openModal);
 $('btnCancel').addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+$('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
+
+function closeAllModals() {
+  closeModal();
+  closeAuthModal();
+  closeMypageModal();
+}
 
 function resetForm() {
-  inputFrom.value = '';
-  inputTo.value   = '';
-  inputMsg.value  = '';
+  $('inputTo').value = '';
+  $('inputMessage').value = '';
+  $('inputPhoto').value = '';
+  $('photoPreview').style.display = 'none';
+  $('photoPreview').src = '';
+  pendingPhoto = null;
+  hideError('cardFormError');
   setColor('yellow');
 }
 
@@ -627,130 +966,140 @@ function setColor(c) {
   });
 }
 
-/* ===== カード追加 ===== */
-$('btnSubmit').addEventListener('click', addCard);
-inputMsg.addEventListener('keydown', e => {
-  if (e.ctrlKey && e.key === 'Enter') addCard();
+/* ===== 写真選択 ===== */
+$('inputPhoto').addEventListener('change', () => {
+  const file = $('inputPhoto').files[0];
+  if (!file) { pendingPhoto = null; $('photoPreview').style.display = 'none'; return; }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('⚠️ 写真は5MB以下にしてください');
+    $('inputPhoto').value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result;
+    pendingPhoto = { base64: dataUrl.split(',')[1], mimeType: file.type };
+    $('photoPreview').src = dataUrl;
+    $('photoPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
 });
 
-function addCard() {
-  const from    = inputFrom.value.trim();
-  const to      = inputTo.value.trim();
-  const message = inputMsg.value.trim();
+/* ===== エラー/成功メッセージ ===== */
+function showError(id, msg) { const el = $(id); el.textContent = msg; el.classList.add('show'); }
+function hideError(id) { const el = $(id); el.textContent = ''; el.classList.remove('show'); }
+function showSuccessMsg(id, msg) { const el = $(id); el.textContent = msg; el.classList.add('show'); }
+function hideSuccessMsg(id) { const el = $(id); el.textContent = ''; el.classList.remove('show'); }
+
+/* ===== カード追加 ===== */
+$('btnSubmit').addEventListener('click', addCard);
+
+async function addCard() {
+  const toName = $('inputTo').value.trim();
+  const message = $('inputMessage').value.trim();
+  hideError('cardFormError');
 
   if (!message) {
-    showToast('💬 メッセージを入力してください');
-    inputMsg.focus();
+    showError('cardFormError', 'メッセージを入力してください');
+    $('inputMessage').focus();
     return;
   }
 
-  const card = {
-    id:      crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2),
-    from,
-    to,
-    message,
-    color:   selectedColor,
-    rot:     (Math.random() * 6 - 3).toFixed(2), // -3〜+3度
-    date:    new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'short', day:'numeric' })
-  };
-
-  cards.unshift(card);
-  saveCards();
-  renderCards();
-  closeModal();
-  showToast('📌 ボードに貼りました！');
+  $('btnSubmit').disabled = true;
+  $('btnSubmit').textContent = '送信中…';
+  try {
+    const payload = { token: session.token, toName, message, color: selectedColor };
+    if (pendingPhoto) {
+      payload.photoBase64 = pendingPhoto.base64;
+      payload.photoMimeType = pendingPhoto.mimeType;
+    }
+    const res = await api('addCard', payload);
+    if (!res.ok) {
+      showError('cardFormError', res.error || '投稿に失敗しました');
+      return;
+    }
+    closeModal();
+    showToast('📌 ボードに貼りました！');
+    await refreshCards();
+  } catch (err) {
+    showError('cardFormError', '通信エラーが発生しました');
+  } finally {
+    $('btnSubmit').disabled = false;
+    $('btnSubmit').textContent = '📌 ボードに貼る';
+  }
 }
 
 /* ===== 削除 ===== */
-function deleteCard(id) {
+async function deleteCard(id) {
   if (!confirm('このカードを削除しますか？')) return;
-  cards = cards.filter(c => c.id !== id);
-  saveCards();
-  renderCards();
+  const res = await api('deleteCard', { token: session.token, cardId: id });
+  if (!res.ok) { showToast('⚠️ ' + (res.error || '削除に失敗しました')); return; }
   showToast('🗑 カードを削除しました');
+  await refreshCards();
 }
 
-/* ===== SVGピン ===== */
+/* ===== カード取得・描画 ===== */
+async function refreshCards() {
+  try {
+    const res = await api('getCards', {});
+    if (res.ok) { cards = res.cards || []; renderCards(); }
+  } catch (err) {
+    showToast('⚠️ ボードの読み込みに失敗しました');
+  }
+}
+
 function pinSVG() {
-  return `<svg class="card-pin" viewBox="0 0 22 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <ellipse cx="11" cy="10" rx="9" ry="9" fill="#D42B2B"/>
-    <ellipse cx="8.5" cy="7.5" rx="2.5" ry="2.5" fill="rgba(255,255,255,0.4)"/>
-    <rect x="10" y="17" width="2" height="13" rx="1" fill="#888"/>
-    <ellipse cx="11" cy="10" rx="9" ry="9" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>
-  </svg>`;
+  return '<svg class="card-pin" viewBox="0 0 22 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<ellipse cx="11" cy="10" rx="9" ry="9" fill="#D42B2B"/>' +
+    '<ellipse cx="8.5" cy="7.5" rx="2.5" ry="2.5" fill="rgba(255,255,255,0.4)"/>' +
+    '<rect x="10" y="17" width="2" height="13" rx="1" fill="#888"/>' +
+    '<ellipse cx="11" cy="10" rx="9" ry="9" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>' +
+    '</svg>';
 }
 
-/* ===== レンダリング ===== */
 function renderCards() {
   cardsGrid.innerHTML = '';
-  countBadge.textContent = `${cards.length} 枚`;
+  countBadge.textContent = cards.length + ' 枚';
   emptyState.style.display = cards.length === 0 ? 'flex' : 'none';
 
-  cards.forEach((card, idx) => {
+  cards.forEach(card => {
     const el = document.createElement('div');
     el.className = 'card';
-    el.dataset.color  = card.color;
-    el.dataset.id     = card.id;
-    el.dataset.index  = idx;
+    el.dataset.color = card.color;
     el.style.setProperty('--rot', card.rot + 'deg');
-    el.style.transform = `rotate(${card.rot}deg)`;
-    el.draggable = true;
+    el.style.transform = 'rotate(' + card.rot + 'deg)';
 
     const fromTo = [
-      card.to   ? `<strong>${escHtml(card.to)}</strong> へ` : '',
-      card.from  ? `${escHtml(card.from)} より` : ''
+      card.toName ? '<strong>' + escHtml(card.toName) + '</strong> へ' : '',
+      card.fromNickname ? escHtml(card.fromNickname) + ' より' : ''
     ].filter(Boolean).join('<br>');
 
-    el.innerHTML = `
-      ${pinSVG()}
-      <div class="card-header">
-        <div class="card-from-to">${fromTo || '<span style="opacity:.45">匿名より</span>'}</div>
-        <button class="btn-delete" title="削除" aria-label="カードを削除">✕</button>
-      </div>
-      <div class="card-message">${escHtml(card.message).replace(/\n/g, '<br>')}</div>
-      <div class="card-date">${escHtml(card.date)}</div>
-    `;
+    const isOwner = session && session.token && card.memberId === session.memberId;
+    const photoHtml = card.photoUrl ? '<img class="card-photo" src="' + escHtml(card.photoUrl) + '" alt="添付写真" loading="lazy">' : '';
 
-    /* 削除ボタン */
-    el.querySelector('.btn-delete').addEventListener('click', e => {
-      e.stopPropagation();
-      deleteCard(card.id);
-    });
+    el.innerHTML =
+      pinSVG() +
+      '<div class="card-header">' +
+        '<div class="card-from-to">' + (fromTo || '<span style="opacity:.45">匿名より</span>') + '</div>' +
+        (isOwner ? '<button class="btn-delete" title="削除" aria-label="カードを削除">✕</button>' : '') +
+      '</div>' +
+      photoHtml +
+      '<div class="card-message">' + escHtml(card.message).replace(/\n/g, '<br>') + '</div>' +
+      '<div class="card-date">' + escHtml(card.dateDisplay || '') + '</div>';
 
-    /* ドラッグ＆ドロップ */
-    el.addEventListener('dragstart', e => {
-      dragSrcIndex = idx;
-      e.dataTransfer.effectAllowed = 'move';
-      setTimeout(() => el.classList.add('dragging'), 0);
-    });
-    el.addEventListener('dragend', () => {
-      el.classList.remove('dragging');
-      document.querySelectorAll('.card').forEach(c => c.classList.remove('drag-over'));
-    });
-    el.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      if (idx !== dragSrcIndex) el.classList.add('drag-over');
-    });
-    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
-    el.addEventListener('drop', e => {
-      e.preventDefault();
-      el.classList.remove('drag-over');
-      if (dragSrcIndex === null || dragSrcIndex === idx) return;
-      const moved = cards.splice(dragSrcIndex, 1)[0];
-      cards.splice(idx, 0, moved);
-      dragSrcIndex = null;
-      saveCards();
-      renderCards();
-    });
+    if (isOwner) {
+      el.querySelector('.btn-delete').addEventListener('click', e => {
+        e.stopPropagation();
+        deleteCard(card.id);
+      });
+    }
 
     cardsGrid.appendChild(el);
   });
 }
 
-/* ===== エスケープ ===== */
 function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
 /* ===== トースト ===== */
@@ -760,13 +1109,217 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+/* =========================================================
+   認証まわり
+========================================================= */
+function openAuthModal(tab) {
+  $('authOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  switchAuthTab(tab || 'login');
+}
+function closeAuthModal() {
+  $('authOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+$('btnAuthOpen').addEventListener('click', () => openAuthModal('login'));
+$('btnAuthCancel1').addEventListener('click', closeAuthModal);
+$('btnAuthCancel2').addEventListener('click', closeAuthModal);
+$('authOverlay').addEventListener('click', e => { if (e.target.id === 'authOverlay') closeAuthModal(); });
+
+function switchAuthTab(tab) {
+  ['panelLogin', 'panelRegister', 'panelForgot', 'panelMustChange'].forEach(id => $(id).classList.remove('active'));
+  $('tabLogin').classList.toggle('active', tab === 'login');
+  $('tabRegister').classList.toggle('active', tab === 'register');
+  if (tab === 'login') $('panelLogin').classList.add('active');
+  if (tab === 'register') $('panelRegister').classList.add('active');
+  if (tab === 'forgot') $('panelForgot').classList.add('active');
+  if (tab === 'mustChange') $('panelMustChange').classList.add('active');
+}
+$('tabLogin').addEventListener('click', () => switchAuthTab('login'));
+$('tabRegister').addEventListener('click', () => switchAuthTab('register'));
+$('btnForgotPassword').addEventListener('click', () => switchAuthTab('forgot'));
+$('btnForgotBack').addEventListener('click', () => switchAuthTab('login'));
+
+/* パスワード表示切替 */
+document.querySelectorAll('.pw-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = $(btn.dataset.target);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '非表示' : '表示';
+  });
+});
+
+/* ログイン */
+let pendingMustChangeToken = null;
+$('btnLoginSubmit').addEventListener('click', async () => {
+  hideError('loginError');
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  if (!email || !password) { showError('loginError', 'メールアドレスとパスワードを入力してください'); return; }
+
+  $('btnLoginSubmit').disabled = true;
+  try {
+    const res = await api('login', { email, password });
+    if (!res.ok) { showError('loginError', res.error); return; }
+    if (res.mustChangePassword) {
+      pendingMustChangeToken = res.token;
+      switchAuthTab('mustChange');
+      return;
+    }
+    session = { token: res.token, nickname: res.nickname, email };
+    saveSession();
+    closeAuthModal();
+    showToast('👋 ログインしました');
+    await refreshCards();
+  } catch (err) {
+    showError('loginError', '通信エラーが発生しました');
+  } finally {
+    $('btnLoginSubmit').disabled = false;
+  }
+});
+
+/* 新規登録 */
+$('btnRegisterSubmit').addEventListener('click', async () => {
+  hideError('registerError');
+  hideSuccessMsg('registerSuccess');
+  const nickname = $('registerNickname').value.trim();
+  const email = $('registerEmail').value.trim();
+  if (!nickname || !email) { showError('registerError', 'ニックネームとメールアドレスを入力してください'); return; }
+
+  $('btnRegisterSubmit').disabled = true;
+  try {
+    const res = await api('register', { nickname, email });
+    if (!res.ok) { showError('registerError', res.error); return; }
+    showSuccessMsg('registerSuccess', res.message);
+    $('registerNickname').value = '';
+    $('registerEmail').value = '';
+  } catch (err) {
+    showError('registerError', '通信エラーが発生しました');
+  } finally {
+    $('btnRegisterSubmit').disabled = false;
+  }
+});
+
+/* パスワード再発行 */
+$('btnForgotSubmit').addEventListener('click', async () => {
+  hideError('forgotError');
+  hideSuccessMsg('forgotSuccess');
+  const email = $('forgotEmail').value.trim();
+  if (!email) { showError('forgotError', 'メールアドレスを入力してください'); return; }
+
+  $('btnForgotSubmit').disabled = true;
+  try {
+    const res = await api('reissuePassword', { email });
+    if (!res.ok) { showError('forgotError', res.error); return; }
+    showSuccessMsg('forgotSuccess', res.message);
+  } catch (err) {
+    showError('forgotError', '通信エラーが発生しました');
+  } finally {
+    $('btnForgotSubmit').disabled = false;
+  }
+});
+
+/* 初回パスワード変更 */
+$('btnMustChangeSubmit').addEventListener('click', async () => {
+  hideError('mustChangeError');
+  const newPassword = $('mustChangeNewPw').value;
+  if (newPassword.length < 6) { showError('mustChangeError', 'パスワードは6文字以上にしてください'); return; }
+
+  $('btnMustChangeSubmit').disabled = true;
+  try {
+    const res = await api('changePassword', { token: pendingMustChangeToken, newPassword });
+    if (!res.ok) { showError('mustChangeError', res.error); return; }
+    const email = $('loginEmail').value.trim();
+    // 変更後のニックネームはログイン時のものを再取得するためログインし直す
+    const loginRes = await api('login', { email, password: newPassword });
+    if (loginRes.ok) {
+      session = { token: loginRes.token, nickname: loginRes.nickname, email };
+      saveSession();
+    }
+    $('mustChangeNewPw').value = '';
+    closeAuthModal();
+    showToast('✅ パスワードを設定しました');
+    await refreshCards();
+  } catch (err) {
+    showError('mustChangeError', '通信エラーが発生しました');
+  } finally {
+    $('btnMustChangeSubmit').disabled = false;
+  }
+});
+
+/* =========================================================
+   マイページ
+========================================================= */
+function openMypageModal() {
+  $('mypageEmail').textContent = session.email || '';
+  $('mypageNickname').value = session.nickname || '';
+  $('mypageOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMypageModal() {
+  $('mypageOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+$('userBadge').addEventListener('click', openMypageModal);
+$('btnMypageClose').addEventListener('click', closeMypageModal);
+$('mypageOverlay').addEventListener('click', e => { if (e.target.id === 'mypageOverlay') closeMypageModal(); });
+
+/* ニックネーム変更 */
+$('btnNicknameSubmit').addEventListener('click', async () => {
+  hideError('nicknameError'); hideSuccessMsg('nicknameSuccess');
+  const newNickname = $('mypageNickname').value.trim();
+  if (!newNickname) { showError('nicknameError', 'ニックネームを入力してください'); return; }
+  const res = await api('changeNickname', { token: session.token, newNickname });
+  if (!res.ok) { showError('nicknameError', res.error); return; }
+  session.nickname = res.nickname;
+  saveSession();
+  showSuccessMsg('nicknameSuccess', 'ニックネームを変更しました');
+  await refreshCards();
+});
+
+/* パスワード変更 */
+$('btnPwChangeSubmit').addEventListener('click', async () => {
+  hideError('pwChangeError'); hideSuccessMsg('pwChangeSuccess');
+  const newPassword = $('mypageNewPw').value;
+  if (newPassword.length < 6) { showError('pwChangeError', 'パスワードは6文字以上にしてください'); return; }
+  const res = await api('changePassword', { token: session.token, newPassword });
+  if (!res.ok) { showError('pwChangeError', res.error); return; }
+  $('mypageNewPw').value = '';
+  showSuccessMsg('pwChangeSuccess', 'パスワードを変更しました');
+});
+
+/* ログアウト */
+$('btnLogout').addEventListener('click', async () => {
+  if (session) await api('logout', { token: session.token }).catch(() => {});
+  session = null;
+  saveSession();
+  closeMypageModal();
+  showToast('👋 ログアウトしました');
+  await refreshCards();
+});
+
+/* 退会 */
+$('btnDeleteAccount').addEventListener('click', async () => {
+  hideError('deleteAccountError');
+  const password = $('deleteAccountPw').value;
+  if (!password) { showError('deleteAccountError', 'パスワードを入力してください'); return; }
+  if (!confirm('本当に退会しますか？この操作は取り消せません。')) return;
+  const res = await api('deleteAccount', { token: session.token, password });
+  if (!res.ok) { showError('deleteAccountError', res.error); return; }
+  session = null;
+  saveSession();
+  closeMypageModal();
+  showToast('会員を退会しました');
+  await refreshCards();
+});
+
 /* ===== 初期化 ===== */
-loadCards();
-renderCards();
-modalOverlay.setAttribute('aria-hidden', 'true');
+loadSession();
+refreshCards();
 </script>
 </body>
 </html>
